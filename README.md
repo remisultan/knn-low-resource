@@ -10,6 +10,9 @@ The papers implemented here are:
 The datasets used to this day are:
 - [AG News Classification Dataset](https://www.kaggle.com/datasets/amananandrai/ag-news-classification-dataset)
   - News articles of class "world", "sports", "business", and "Science"
+- [DBPedia](https://www.kaggle.com/datasets/amananandrai/ag-news-classificathttps://www.kaggle.com/datasets/danofer/dbpedia-classes)
+  - Hierarchical Taxonomy of Wikipedia article classes
+
 
 ## Requirements
 - Java 20

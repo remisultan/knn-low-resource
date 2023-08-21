@@ -6,7 +6,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -17,9 +19,11 @@ import org.rsultan.eval.MulticlassConfusionMatrix;
 import org.rsultan.knn.KNN;
 import org.rsultan.knn.KNN.SentenceCategory;
 
-public class AgNews {
+public class DBPedia {
 
-  public static final Pattern PATTERN = Pattern.compile("([1-4]),(.+)");
+  private static final Map<String, Integer> labelsToInt = new HashMap<>();
+
+  public static final Pattern PATTERN = Pattern.compile("((\".+\"),(.+),(.+),(.+))");
 
   //The dataset https://www.kaggle.com/datasets/amananandrai/ag-news-classification-dataset
   // args[0] is the training dataset
@@ -28,12 +32,12 @@ public class AgNews {
     int k = 5;
     var trainSet = getDatasetSet(args, 0);
     Collections.shuffle(trainSet);
-    trainSet = trainSet.subList(0, 3000);
+    trainSet = trainSet.subList(0, 20000);
     var testSet = getDatasetSet(args, 1);
     Collections.shuffle(testSet);
-    testSet = trainSet.subList(0, 3000);
+    testSet = trainSet.subList(0, 10000);
 
-    int nbOfLabels = 4;
+    int nbOfLabels = labelsToInt.size();
     KNN knn = new KNN(k);
     INDArray predict = knn.predict(trainSet, testSet, nbOfLabels);
     var confusionMatrix = new MulticlassConfusionMatrix(nbOfLabels);
@@ -58,10 +62,14 @@ public class AgNews {
     return Files.readLines(new File(args[x]), Charset.defaultCharset()).stream().skip(1)
         .map(PATTERN::matcher)
         .filter(Matcher::matches)
-        .map(array -> new SentenceCategory(
-            array.group(2).replaceAll("[\"\\-'().\\,\\\\]", " ").replaceAll(" +", " ")
-                .toLowerCase(),
-            parseInt(array.group(1)) - 1))
+        .map(array -> {
+          String group = array.group(4);
+          labelsToInt.putIfAbsent(group, labelsToInt.size());
+          return new SentenceCategory(
+              array.group(1).replaceAll("[\"\\-'().\\,\\\\]", " ").replaceAll(" +", " ")
+                  .toLowerCase(),
+              labelsToInt.get(group));
+        })
         .collect(Collectors.toList());
   }
 }
